@@ -1,0 +1,23 @@
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# IDE files (example for VS Code)
+.vscode/
+
+# Dependency directories (example)
+# node_modules/
+
+# Build output (example)
+# dist/
+# build/
+
+# Log files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables file
+.env
+.env*.local

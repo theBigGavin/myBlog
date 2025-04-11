@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>博客后台管理</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Admin-specific styles */
+        main { background: #e9ecef; } /* Lighter background for admin */
+        .admin-section { background: #fff; padding: 20px; margin-bottom: 20px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        #post-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
+        #post-list li:last-child { border-bottom: none; }
+        #post-list button { margin-left: 5px; padding: 3px 8px; cursor: pointer; }
+        .edit-form, .add-form { margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="text"], textarea { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        textarea { min-height: 150px; }
+        .form-actions button { padding: 10px 15px; margin-right: 10px; cursor: pointer; }
+        #save-changes-section { margin-top: 20px; padding: 15px; background-color: #fff; border: 1px solid #dc3545; border-radius: 5px; }
+        #save-json-button { background-color: #28a745; color: white; }
+        #json-output { width: 100%; min-height: 150px; margin-top: 10px; font-family: monospace; font-size: 0.9em; background-color: #f8f9fa; border: 1px solid #ced4da; }
+    </style>
+</head>
+<body>
+    <!-- No particles background for admin page -->
+    <header>
+        <div class="container">
+            <h1>博客后台管理</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">返回博客首页</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <main>
+            <!-- Section to display existing posts -->
+            <section class="admin-section">
+                <h2>管理现有文章</h2>
+                <ul id="post-list">
+                    <!-- Posts will be loaded here by admin.js -->
+                    <li>正在加载文章...</li>
+                </ul>
+            </section>
+
+            <!-- Section to add a new post -->
+            <section class="admin-section">
+                <h2>添加新文章</h2>
+                <form id="add-post-form" class="add-form">
+                    <div>
+                        <label for="add-title">标题:</label>
+                        <input type="text" id="add-title" required>
+                    </div>
+                    <div>
+                        <label for="add-content">内容:</label>
+                        <textarea id="add-content" required></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit">添加文章</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Section to edit an existing post (hidden initially) -->
+            <section id="edit-post-section" class="admin-section" style="display: none;">
+                <h2>编辑文章</h2>
+                <form id="edit-post-form" class="edit-form">
+                    <input type="hidden" id="edit-id">
+                    <div>
+                        <label for="edit-title">标题:</label>
+                        <input type="text" id="edit-title" required>
+                    </div>
+                    <div>
+                        <label for="edit-content">内容:</label>
+                        <textarea id="edit-content" required></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit">保存更改</button>
+                        <button type="button" id="cancel-edit-button">取消</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Section to save changes -->
+            <section id="save-changes-section" class="admin-section">
+                 <h2>保存更改到 posts.json</h2>
+                 <p><strong>重要:</strong> 由于这是静态网站，更改不会自动保存到服务器。请点击下面的按钮生成更新后的 JSON 数据，然后手动复制内容并覆盖您项目中的 <code>posts.json</code> 文件。</p>
+                 <button id="save-json-button">生成并显示更新后的 JSON</button>
+                 <textarea id="json-output" readonly placeholder="更新后的 JSON 数据将显示在这里..."></textarea>
+            </section>
+
+        </main>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>博客管理后台</p>
+        </div>
+    </footer>
+
+    <!-- Admin specific script -->
+    <script src="admin.js"></script>
+</body>
+</html>
