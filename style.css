@@ -38,7 +38,7 @@ body {
 }
 
 header {
-    background: linear-gradient(to right, #007bff, #0056b3); /* 渐变背景 */
+    background: linear-gradient(to right, #8800FF, #6600CC); /* 紫色渐变背景 */
     position: relative; /* Ensure header content is above particles */
     z-index: 1;
     color: #fff;
@@ -100,7 +100,7 @@ article:last-child {
 }
 
 article h2 {
-    color: #0056b3; /* 标题使用主题色 */
+    color: #6600CC; /* 标题使用深紫色 */
     margin-bottom: 15px;
     font-size: 1.8rem;
 }
@@ -116,6 +116,18 @@ article p {
     color: #495057;
 }
 
+/* General Link Styling within main content */
+main a {
+    color: #8800FF; /* Purple links */
+    text-decoration: none; /* Remove default underline */
+    transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+main a:hover {
+    color: #6600CC; /* Darker purple on hover */
+    text-decoration: underline; /* Add underline on hover */
+}
+
 footer {
     text-align: center;
     margin-top: auto; /* 将页脚推到底部 */
@@ -125,6 +137,72 @@ footer {
     z-index: 1;
     color: #adb5bd; /* 浅灰色文本 */
     font-size: 0.9rem;
+}
+
+/* General Button Styling */
+button, .button { /* Apply to button elements and elements with class="button" */
+    display: inline-block;
+    padding: 10px 15px;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: center;
+    text-decoration: none;
+    vertical-align: middle;
+    cursor: pointer;
+    user-select: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    color: #fff;
+    background-color: #8800FF; /* Purple */
+    border-color: #8800FF;
+}
+
+button:hover, .button:hover {
+    color: #fff;
+    background-color: #6600CC; /* Darker Purple */
+    border-color: #6000BF;
+}
+
+button:focus, .button:focus {
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(136, 0, 255, 0.5); /* Purple focus ring */
+}
+
+button:disabled, .button:disabled {
+    color: #fff;
+    background-color: #8800FF;
+    border-color: #8800FF;
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+/* Specific button variations (optional, e.g., for cancel/delete) */
+.button-secondary {
+    color: #fff;
+    background-color: #6c757d; /* Gray */
+    border-color: #6c757d;
+}
+.button-secondary:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+}
+.button-secondary:focus {
+    box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.5);
+}
+
+.button-danger {
+    color: #fff;
+    background-color: #dc3545; /* Red */
+    border-color: #dc3545;
+}
+.button-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+.button-danger:focus {
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.5);
 }
 
 /* 响应式设计 */

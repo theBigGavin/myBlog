@@ -10,7 +10,7 @@ if (document.getElementById('particles-js')) {
         }
       },
       "color": {
-        "value": "#007bff" // 粒子颜色 (匹配主题色)
+        "value": "#8800FF" // 紫色粒子
       },
       "shape": {
         "type": "circle", // 粒子形状
@@ -50,7 +50,7 @@ if (document.getElementById('particles-js')) {
       "line_linked": {
         "enable": true,
         "distance": 150, // 粒子连接线距离
-        "color": "#007bff", // 粒子连接线颜色
+        "color": "#8800FF", // 紫色连接线
         "opacity": 0.4,
         "width": 1
       },

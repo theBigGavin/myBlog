@@ -21,3 +21,7 @@ yarn-error.log*
 # Environment variables file
 .env
 .env*.local
+
+# Admin files (keep local, do not deploy)
+admin.html
+admin.js
