@@ -10,7 +10,7 @@
     "id": "post-1744362352483-4fctg",
     "title": "测试2",
     "date": "2025-04-11",
-    "content": "## 中文\n\n中|文|字\n---|---|---\n英文|字|母\n\n```js\nconst hello = 'hello world!'\nconsole.log(hello)\n```\n```mermaid\njourney\n    title My working day\n    section Go to work\n      Make tea: 5: Me\n      Go upstairs: 3: Me\n      Do work: 1: Me, Cat\n    section Go home\n      Go downstairs: 5: Me\n      Sit down: 5: Me\n```",
+    "content": "## 中文\n\n中|文|字\n---|---|---\n英文|字|母\n\n```js\nconst hello = 'hello world!'\nconsole.log(hello)\n```\n```mermaid\njourney\n    title My working day\n    section Go to work\n      Make tea: 5: Me\n      Go upstairs: 3: Me\n      Do work: 1: Me, Cat\n    section Go home\n      Go downstairs: 5: Me\n      Sit down: 5: Me\n\n```",
     "summary": "我的测试博"
   },
   {

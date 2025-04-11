@@ -243,7 +243,26 @@ button:disabled, .button:disabled {
 /* We only need to keep styles that override or add to it */
 
 
-/* Table styling is now handled by github-markdown.css */
+/* Table styling is primarily handled by github-markdown.css */
+/* Fallback/override for borders to ensure visibility */
+/* Ensure table takes full width and borders collapse */
+main.markdown-body table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    margin-bottom: 1.5em !important; /* Add some bottom margin */
+}
+/* Ensure all cells have borders */
+main.markdown-body table th,
+main.markdown-body table td {
+    border: 1px solid #d0d7de !important; /* Slightly darker border for visibility */
+    padding: 8px 12px !important; /* Consistent padding */
+}
+/* Ensure header has a background */
+main.markdown-body table th {
+     background-color: #f6f8fa !important;
+     font-weight: 600 !important;
+}
 
 /* Code Block Styling (Handled by highlight.js theme) */
 /* We only need styles for the container and the copy button */

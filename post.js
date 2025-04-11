@@ -1,5 +1,4 @@
 // Function to load a script dynamically
-// Function to load a script dynamically
 function loadScript(src, callback) {
     if (document.querySelector(`script[src="${src}"]`)) {
         if (callback) callback(); // Already loaded or loading
@@ -36,13 +35,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Helper Functions ---
 
-    // Get post ID from URL query parameter (e.g., ?id=post-1)
     function getPostIdFromUrl() {
         const params = new URLSearchParams(window.location.search);
         return params.get('id');
     }
 
-    // Format date (consistent with script.js)
     function formatDate(dateString) {
         try {
             const dateObj = new Date(dateString);
@@ -54,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Load and display the specific post
+    // --- Main Post Loading Logic ---
     async function loadPost(postId) {
         if (!postId) {
             postContentContainer.innerHTML = '<h2>无效的文章 ID</h2><p>无法加载文章，请确保链接正确。</p>';
@@ -63,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        currentPostId = postId; // Store the ID for like/comment functions
+        currentPostId = postId;
 
         try {
             const response = await fetch('posts.json');
@@ -74,83 +71,202 @@ document.addEventListener('DOMContentLoaded', () => {
             const post = posts.find(p => p.id === postId);
 
             if (post) {
-                currentPostTitle = post.title; // Store title
-                pageTitle.textContent = `${post.title} - 我的个人博客`; // Update page title
+                currentPostTitle = post.title;
+                pageTitle.textContent = `${post.title} - 我的个人博客`;
 
-                // Clear loading message and add markdown-body class to the main container
-                postContentContainer.innerHTML = '';
-                postContentContainer.classList.add('markdown-body');
+                postContentContainer.innerHTML = ''; // Clear loading
 
-                // Create title element
+                // Add Title and Meta
                 const titleElement = document.createElement('h2');
                 titleElement.textContent = post.title;
                 postContentContainer.appendChild(titleElement);
 
-                // Create meta element
                 const metaElement = document.createElement('div');
                 metaElement.classList.add('post-meta');
                 metaElement.innerHTML = `<p>发布日期：${formatDate(post.date)}</p>`;
                 postContentContainer.appendChild(metaElement);
 
-                // Create content container for Markdown rendering
+                // Create container for actual content
                 const contentElement = document.createElement('div');
-                // contentElement.classList.add('markdown-body'); // Moved class to parent container
                 postContentContainer.appendChild(contentElement);
 
-                // Function to render content, highlight code, and add copy buttons
-                const renderAndEnhanceContent = () => {
-                    // Configure marked (optional: enable GitHub Flavored Markdown, etc.)
-                    // marked.setOptions({ gfm: true, breaks: true });
-                    contentElement.innerHTML = marked.parse(post.content || ''); // Render Markdown
-
-                    // Load highlight.js CSS (e.g., GitHub theme)
-                    loadStyle('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css');
-
-                    // Load highlight.js core and highlight code blocks
-                    if (typeof hljs === 'undefined') {
-                        console.log("Loading highlight.js...");
-                        loadScript('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js', () => {
-                             console.log("highlight.js loaded.");
-                             hljs.highlightAll(); // Highlight all code blocks
-                             enhanceCodeBlocks(contentElement); // Enhance code blocks after highlighting
-                             initializeMermaid(contentElement); // Initialize Mermaid after highlighting
-                        });
-                    } else {
-                        hljs.highlightAll(); // Highlight if already loaded
-                        enhanceCodeBlocks(contentElement); // Enhance code blocks if already loaded
-                        initializeMermaid(contentElement); // Initialize Mermaid if already loaded
-                    }
-                };
-
-                // Load Marked.js and then render/enhance
+                // Load Marked.js first
                 if (typeof marked === 'undefined') {
                     console.log("Loading Marked.js...");
                     loadScript('https://cdn.jsdelivr.net/npm/marked/marked.min.js', () => {
                         console.log("Marked.js loaded.");
-                        renderAndEnhanceContent();
+                        renderAndProcessContent(contentElement, post.content || '');
                     });
                 } else {
-                    renderAndEnhanceContent(); // Render/enhance if Marked.js already loaded
+                    renderAndProcessContent(contentElement, post.content || '');
                 }
 
-                // Initialize like button state
                 initializeLikeButton();
 
-                // Giscus is initialized via its script tag in post.html
-
             } else {
+                // Handle post not found
                 postContentContainer.innerHTML = `<h2>文章未找到</h2><p>ID 为 "${postId}" 的文章不存在。</p>`;
                 pageTitle.textContent = '文章未找到 - 我的个人博客';
                  if (likeButton) likeButton.disabled = true;
             }
 
         } catch (error) {
+            // Handle fetch error
             console.error('加载文章失败:', error);
             postContentContainer.innerHTML = '<h2>加载文章时出错</h2><p>请稍后重试。</p>';
             pageTitle.textContent = '加载错误 - 我的个人博客';
              if (likeButton) likeButton.disabled = true;
         }
     }
+
+    // --- Content Rendering and Enhancement Pipeline ---
+    function renderAndProcessContent(container, markdownContent) {
+        // 1. Render Markdown using standard Marked.js
+        marked.use(); // Ensure standard renderer
+        container.innerHTML = marked.parse(markdownContent, { breaks: true, gfm: true });
+
+        // 2. Prepare and Initialize Mermaid
+        prepareAndRunMermaid(container);
+
+        // 3. Highlight and Enhance other code blocks
+        highlightAndEnhanceCodeBlocks(container);
+    }
+
+    // --- Prepare Mermaid Blocks and Initialize Mermaid ---
+    function prepareAndRunMermaid(container) {
+        const mermaidCodeBlocks = container.querySelectorAll('pre code.language-mermaid');
+        if (mermaidCodeBlocks.length === 0) return;
+
+        const mermaidElementsToRender = [];
+        mermaidCodeBlocks.forEach(codeBlock => {
+            const pre = codeBlock.closest('pre');
+            if (pre) {
+                const mermaidDiv = document.createElement('div');
+                mermaidDiv.className = 'mermaid';
+                mermaidDiv.textContent = codeBlock.textContent || ''; // Get raw text
+                pre.parentNode.replaceChild(mermaidDiv, pre); // Replace <pre> with <div>
+                mermaidElementsToRender.push(mermaidDiv);
+            }
+        });
+
+        if (mermaidElementsToRender.length > 0) {
+            if (typeof mermaid === 'undefined') {
+                console.log("Loading Mermaid.js...");
+                loadScript('https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js', () => {
+                    console.log("Mermaid.js loaded.");
+                    runMermaid(mermaidElementsToRender);
+                });
+            } else {
+                runMermaid(mermaidElementsToRender);
+            }
+        }
+    }
+
+    function runMermaid(elements) {
+         try {
+            mermaid.initialize({ startOnLoad: false, theme: 'neutral' });
+            mermaid.run({ nodes: elements });
+            console.log(`Mermaid diagrams rendered/re-rendered for ${elements.length} elements.`);
+        } catch (error) {
+            handleMermaidError(error, elements);
+        }
+    }
+
+    function handleMermaidError(error, elements) {
+        console.error("Mermaid rendering failed:", error);
+        elements.forEach(el => {
+            if (!el.dataset.mermaidError) {
+                el.innerHTML = `<div style="color: red; font-weight: bold; padding: 1em;">Mermaid Error: ${error.message}</div>`;
+                el.dataset.mermaidError = "true";
+            }
+        });
+    }
+
+    // --- Highlight Code and Enhance Blocks ---
+    function highlightAndEnhanceCodeBlocks(container) {
+        // Load highlight.js CSS
+        loadStyle('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css');
+
+        // Find standard code blocks (<pre> elements that haven't been replaced by a mermaid <div>)
+        const codeBlocksToProcess = container.querySelectorAll('pre:not(.mermaid)'); // Target <pre> not marked as mermaid
+
+        if (codeBlocksToProcess.length === 0) return; // Exit if nothing to process
+
+        // Load highlight.js script if needed
+        if (typeof hljs === 'undefined') {
+            console.log("Loading highlight.js for code blocks...");
+            loadScript('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js', () => {
+                console.log("highlight.js loaded.");
+                processCodeBlocks(codeBlocksToProcess);
+            });
+        } else {
+            processCodeBlocks(codeBlocksToProcess);
+        }
+    }
+
+    // Helper function to process (highlight and enhance) each standard code block
+    function processCodeBlocks(blocks) {
+        blocks.forEach(preElement => {
+            const codeElement = preElement.querySelector('code');
+            if (codeElement) { // Check if code element exists
+                // Highlight
+                hljs.highlightElement(codeElement);
+                // Enhance (add button/tag)
+                addEnhancementsToBlock(preElement, codeElement);
+            }
+        });
+        console.log("Code block highlighting and enhancements applied.");
+    }
+
+    // --- Add Copy Buttons and Language Tags to a specific Code Block ---
+    function addEnhancementsToBlock(preElement, codeElement) {
+        // SVG icons (defined once)
+        const copyIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/></svg>`;
+        const copiedIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-lg" viewBox="0 0 16 16"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022z"/></svg>`;
+
+        // Prevent adding enhancements multiple times
+        if (preElement.querySelector('.copy-code-button')) return;
+
+        preElement.style.position = 'relative'; // Needed for absolute positioning
+
+        // --- Add Language Tag ---
+        const languageClass = Array.from(codeElement.classList).find(cls => cls.startsWith('language-'));
+        if (languageClass) {
+            const languageName = languageClass.replace('language-', '').toLowerCase();
+            if (!preElement.querySelector('.code-language-tag')) {
+                const langTag = document.createElement('span');
+                langTag.className = 'code-language-tag';
+                langTag.textContent = languageName;
+                preElement.appendChild(langTag);
+            }
+        }
+
+        // --- Add Copy Button ---
+        const button = document.createElement('button');
+        button.innerHTML = copyIconSVG;
+        button.className = 'copy-code-button';
+        button.setAttribute('aria-label', '复制代码');
+
+        button.addEventListener('click', () => {
+            const codeToCopy = codeElement.innerText || codeElement.textContent;
+            navigator.clipboard.writeText(codeToCopy).then(() => {
+                button.innerHTML = copiedIconSVG;
+                button.disabled = true;
+                setTimeout(() => {
+                    button.innerHTML = copyIconSVG;
+                    button.disabled = false;
+                }, 2000);
+            }).catch(err => {
+                console.error('无法复制到剪贴板:', err);
+                button.innerHTML = '失败';
+                 setTimeout(() => {
+                    button.innerHTML = copyIconSVG;
+                }, 2000);
+            });
+        });
+        preElement.appendChild(button);
+    } // End of addEnhancementsToBlock
+
 
     // --- Like Button Logic (using localStorage) ---
 
@@ -171,13 +287,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (likedPosts[postId]) {
             // Unlike
             delete likedPosts[postId];
-            // In a real scenario, you'd decrement a server-side counter
-            likes[postId] = (likes[postId] || 1) - 1; // Simulate decrement (won't persist)
+            likes[postId] = (likes[postId] || 1) - 1; // Simulate decrement
         } else {
             // Like
             likedPosts[postId] = true;
-            // In a real scenario, you'd increment a server-side counter
-            likes[postId] = (likes[postId] || 0) + 1; // Simulate increment (won't persist)
+            likes[postId] = (likes[postId] || 0) + 1; // Simulate increment
         }
 
         localStorage.setItem('userLikedPosts', JSON.stringify(likedPosts));
@@ -190,7 +304,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!likeButton || !likeCountSpan) return;
 
         const liked = hasUserLikedPost(postId);
-        // const count = getLikesForPost(postId); // Simulated count isn't reliable
 
         if (liked) {
             likeButton.textContent = '已赞';
@@ -199,7 +312,6 @@ document.addEventListener('DOMContentLoaded', () => {
             likeButton.textContent = '点赞';
             likeButton.classList.remove('liked');
         }
-        // Display a simple message instead of a count from localStorage
         likeCountSpan.textContent = liked ? '您已点赞' : '';
     }
 
@@ -213,139 +325,15 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // --- Initialize Mermaid ---
-    function initializeMermaid(container) {
-        const mermaidBlocks = container.querySelectorAll('pre code.language-mermaid');
-        if (mermaidBlocks.length === 0) {
-            // No mermaid blocks found, no need to load the library
-            return;
-        }
-
-        // Add 'mermaid' class to parent 'pre' for easier targeting if needed
-        mermaidBlocks.forEach(block => {
-            const pre = block.closest('pre');
-            if (pre && !pre.classList.contains('mermaid')) {
-                pre.classList.add('mermaid');
-                // Mermaid expects the raw text content, not highlighted code
-                // Restore original text content before mermaid runs
-                // Note: This assumes the original markdown is stored somewhere or can be retrieved.
-                // If not, this approach might need adjustment.
-                // For now, we'll let mermaid try to parse the content directly.
-                // It might work if highlight.js doesn't heavily modify the structure.
-            }
-        });
-
-
-        if (typeof mermaid === 'undefined') {
-            console.log("Loading Mermaid.js...");
-            // Load Mermaid script
-            loadScript('https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js', () => {
-                console.log("Mermaid.js loaded.");
-                try {
-                    mermaid.initialize({ startOnLoad: false, theme: 'neutral' }); // Initialize manually
-                    // Use mermaid.run() to render all elements with class 'mermaid'
-                    // Mermaid API looks for elements with class="mermaid" containing the diagram text
-                    mermaid.run({ nodes: container.querySelectorAll('pre.mermaid') }); // Target the parent pre element
-                    console.log("Mermaid diagrams rendered.");
-                } catch (error) {
-                     console.error("Mermaid rendering failed:", error);
-                     // Display error message in the block
-                     container.querySelectorAll('pre.mermaid').forEach(pre => {
-                         if (!pre.dataset.mermaidError) { // Prevent multiple error messages
-                            pre.innerHTML = `<div style="color: red; font-weight: bold;">Mermaid Error: ${error.message}</div>`;
-                            pre.dataset.mermaidError = "true";
-                         }
-                     });
-                }
-            });
-        } else {
-             try {
-                // Re-run if Mermaid is already loaded
-                mermaid.run({ nodes: container.querySelectorAll('pre.mermaid') });
-                console.log("Mermaid diagrams re-rendered.");
-            } catch (error) {
-                 console.error("Mermaid re-rendering failed:", error);
-                 container.querySelectorAll('pre.mermaid').forEach(pre => {
-                     if (!pre.dataset.mermaidError) {
-                        pre.innerHTML = `<div style="color: red; font-weight: bold;">Mermaid Error: ${error.message}</div>`;
-                        pre.dataset.mermaidError = "true";
-                     }
-                 });
-            }
-        }
-    }
-
-    // This block was duplicated, removing it.
-
-    // --- Enhance Code Blocks (Add Copy Button and Language Tag) ---
-    function enhanceCodeBlocks(container) { // Accept container element
-        // SVG icons
-        const copyIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/></svg>`;
-        const copiedIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-lg" viewBox="0 0 16 16"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022z"/></svg>`;
-
-        const codeBlocks = container.querySelectorAll('pre'); // Query within the specific container
-        codeBlocks.forEach(block => {
-            // Prevent adding button multiple times
-            if (block.querySelector('.copy-code-button')) {
-                return;
-            }
-
-            const codeElement = block.querySelector('code');
-            if (!codeElement) return; // Skip if no code element found
-
-            // --- Add Language Tag ---
-            const languageClass = Array.from(codeElement.classList).find(cls => cls.startsWith('language-'));
-            if (languageClass) {
-                const languageName = languageClass.replace('language-', '').toLowerCase();
-                // Prevent adding tag multiple times
-                if (!block.querySelector('.code-language-tag')) {
-                    const langTag = document.createElement('span');
-                    langTag.className = 'code-language-tag';
-                    langTag.textContent = languageName;
-                    block.appendChild(langTag); // Append language tag
-                }
-            }
-
-            // --- Add Copy Button ---
-
-            // This block was duplicated, removing it.
-            const button = document.createElement('button');
-            button.innerHTML = copyIconSVG; // Set initial icon
-            button.className = 'copy-code-button';
-            button.setAttribute('aria-label', '复制代码'); // Accessibility
-            // Make pre relative for absolute positioning of button
-            block.style.position = 'relative';
-
-            button.addEventListener('click', () => {
-                const codeToCopy = codeElement.innerText || codeElement.textContent;
-                navigator.clipboard.writeText(codeToCopy).then(() => {
-                    button.innerHTML = copiedIconSVG; // Change to copied icon
-                    button.disabled = true;
-                    setTimeout(() => {
-                        button.innerHTML = copyIconSVG; // Change back to copy icon
-                        button.disabled = false;
-                    }, 2000); // Reset after 2 seconds
-                }).catch(err => {
-                    console.error('无法复制到剪贴板:', err);
-                    button.innerHTML = '失败'; // Keep text for error
-                     setTimeout(() => {
-                        button.innerHTML = copyIconSVG; // Change back to copy icon
-                    }, 2000);
-                });
-            });
-
-            block.appendChild(button);
-        });
-    }
 
     // --- Comment System Initialization (No longer needed for Giscus) ---
     // Giscus is loaded and configured directly via the script tag in post.html.
-    // No specific JavaScript initialization is required here.
 
 
     // --- Initial Load ---
     const postId = getPostIdFromUrl();
     loadPost(postId);
+
 
     // Initialize particles.js (copied from script.js, ensure it runs on this page too)
     if (document.getElementById('particles-js')) {
