@@ -233,3 +233,95 @@ button:disabled, .button:disabled {
         margin: 10px 0;
     }
 }
+
+/* Markdown Content Styling */
+.markdown-body { /* Target the container div we added in post.js */
+    line-height: 1.7;
+}
+
+/* Heading, paragraph, list, etc. styling within .markdown-body is now handled by github-markdown.css */
+/* We only need to keep styles that override or add to it */
+
+
+/* Table styling is now handled by github-markdown.css */
+
+/* Code Block Styling (Handled by highlight.js theme) */
+/* We only need styles for the container and the copy button */
+.markdown-body pre {
+    position: relative; /* Needed for copy button positioning */
+    background-color: #f5f5f5; /* Add a distinct background color */
+    padding: 1em; /* Ensure padding */
+    border-radius: 4px; /* Add border radius */
+    /* Other styles like text color are controlled by highlight.js theme */
+    margin: 1.5em 0;
+    overflow-x: auto; /* Keep horizontal scroll */
+}
+
+.markdown-body code {
+     /* Inline code styling */
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9em;
+    background-color: rgba(136, 0, 255, 0.08); /* Light purple background for inline code */
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+}
+
+.markdown-body pre code {
+    /* Reset styles for code inside pre, as highlight.js theme handles it */
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+    font-size: inherit; /* Inherit font size from pre */
+}
+
+/* Copy Code Button Styling */
+.copy-code-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 6px; /* Adjust padding for icon */
+    font-size: 1em; /* Reset font size if needed */
+    line-height: 1; /* Ensure icon fits well */
+    color: #fff;
+    background-color: rgba(108, 117, 125, 0.7); /* Slightly transparent gray */
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    opacity: 0; /* Hidden by default */
+    transition: opacity 0.2s ease-in-out, background-color 0.2s ease-in-out;
+    z-index: 1; /* Ensure it's above code */
+    display: inline-flex; /* Align icon nicely */
+    align-items: center;
+    justify-content: center;
+}
+
+/* Code Language Tag Styling */
+.code-language-tag {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    font-size: 0.8em;
+    color: #6a737d; /* Gray text */
+    background-color: rgba(223, 226, 229, 0.7); /* Light gray background, slightly transparent */
+    padding: 2px 6px;
+    border-radius: 3px;
+    user-select: none; /* Prevent text selection */
+    z-index: 1; /* Ensure it's above code but potentially below copy button if overlapping */
+    text-transform: lowercase; /* Display language name in lowercase */
+}
+
+.markdown-body pre:hover .copy-code-button {
+    opacity: 1; /* Show on hover */
+}
+
+.copy-code-button:hover {
+    background-color: rgba(90, 98, 104, 0.9); /* Darker gray on hover */
+}
+
+.copy-code-button:disabled {
+    background-color: rgba(40, 167, 69, 0.8); /* Slightly transparent green when copied */
+    cursor: default;
+    opacity: 1; /* Keep visible when disabled */
+}
+
+/* Blockquote styling is now handled by github-markdown.css */

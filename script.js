@@ -171,13 +171,12 @@ async function loadPosts() {
       }
       meta.appendChild(datePara);
 
-      const content = document.createElement('p');
-      // Simple content display, consider using a library like Marked for Markdown support later
-      content.textContent = post.content;
+      const summary = document.createElement('p');
+      summary.textContent = post.summary || '（暂无摘要）'; // Display summary, handle missing
 
       article.appendChild(titleHeader);
       article.appendChild(meta);
-      article.appendChild(content);
+      article.appendChild(summary); // Append summary instead of full content
 
       postsContainer.appendChild(article);
     });
